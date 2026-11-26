@@ -25,9 +25,9 @@ def extract(url, table_attri):
   #Verificaos el contenido de cada fila teniendo el atributo td
   #Para cada fila, buscamos sus celdas td
   for row in rows:
-    col = rows.find_all('td')  
+    col = row.find_all('td')  
     if len(col) != 0:
-      if col[0].find('a') is not None and '-' not in col[2]:
+      if col[0].find('a') is not None and '—' not in col[2]:
         data_dict = {'Country':col[0].a.contents[0],
                      'GDP_USD_millions':col[2].contents[0]}
         df1 = pd.DataFrame(data_dict,index=[0])
@@ -69,3 +69,40 @@ def log_process(message):
   timestamp = now.strftime(timestamp_format)
   with open('./etl_project_log.txt','a') as f:
     f.write(timestamp + ' : ' + message + '\n') 
+
+#Testing
+log_process('ETL process started')
+
+#Extract phase
+log_process('Extract phase started')
+extracted_data = extract(url,table_attri)
+log_process('Extract phase completed')
+
+#Transform phase
+log_process('Transform phase started')
+transformed_data = transform(extracted_data)
+log_process('Transform phase completed')
+print('Transformed data:')
+print(transformed_data.head(15))
+
+#Load phase
+log_process('Initiating loading process')
+log_process('Loading data to CSV file')
+load_to_csv(transformed_data,csv_path)
+
+log_process('Loading data to database')
+sql_connection = sql.connect(db_name)
+log_process('SQL conection initiated')
+load_to_db(transformed_data,sql_connection, table_name)
+log_process('Data loaded to database successfully')
+
+log_process('ETL process completed successfully')
+
+#Running a query to display only the entries with more than a 100 billion USD economy
+log_process('Running query to check data in database')
+query_statement = f'SELECT * FROM {table_name} WHERE GDP_USD_billions > 100'
+run_query(query_statement,sql_connection)
+
+log_process('Process complete.')
+
+sql_connection.close()
