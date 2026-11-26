@@ -221,3 +221,11 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Data Engineering outputs (databases, logs, generated datasets)
+*.db
+*.sqlite
+*_log.txt
+*.csv
+*.json
+*.parquet
